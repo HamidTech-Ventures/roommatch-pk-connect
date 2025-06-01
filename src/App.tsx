@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,8 @@ import Admin from "./pages/Admin";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import OwnerDashboard from "./pages/OwnerDashboard";
+import TenantDashboard from "./pages/TenantDashboard";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PropertyDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/owner-dashboard" 
+              element={
+                <ProtectedRoute ownerOnly>
+                  <OwnerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/tenant-dashboard" 
+              element={
+                <ProtectedRoute>
+                  <TenantDashboard />
                 </ProtectedRoute>
               } 
             />

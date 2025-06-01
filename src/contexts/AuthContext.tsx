@@ -7,6 +7,8 @@ interface User {
   email: string;
   role: 'user' | 'owner' | 'admin';
   avatar?: string;
+  properties?: string[]; // Array of property IDs for owners
+  currentProperty?: string; // Current rented property for users
 }
 
 interface AuthContextType {
@@ -15,6 +17,7 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string, role: 'user' | 'owner') => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -51,12 +54,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(adminUser);
       localStorage.setItem('roommatch_user', JSON.stringify(adminUser));
       return true;
+    } else if (email === 'owner@roommatch.pk' && password === 'owner123') {
+      const ownerUser = {
+        id: '3',
+        name: 'Ahmad Ali',
+        email: 'owner@roommatch.pk',
+        role: 'owner' as const,
+        properties: ['1', '2', '3'] // Sample property IDs
+      };
+      setUser(ownerUser);
+      localStorage.setItem('roommatch_user', JSON.stringify(ownerUser));
+      return true;
     } else if (email && password) {
       const mockUser = {
         id: '2',
         name: 'John Doe',
         email,
-        role: 'user' as const
+        role: 'user' as const,
+        currentProperty: '1' // Sample rented property
       };
       setUser(mockUser);
       localStorage.setItem('roommatch_user', JSON.stringify(mockUser));
@@ -73,11 +88,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       id: Date.now().toString(),
       name,
       email,
-      role
+      role,
+      properties: role === 'owner' ? [] : undefined,
+      currentProperty: role === 'user' ? undefined : undefined
     };
     setUser(newUser);
     localStorage.setItem('roommatch_user', JSON.stringify(newUser));
     return true;
+  };
+
+  const updateUser = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('roommatch_user', JSON.stringify(updatedUser));
+    }
   };
 
   const logout = () => {
@@ -91,7 +116,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       signup,
       logout,
-      isAuthenticated: !!user
+      isAuthenticated: !!user,
+      updateUser
     }}>
       {children}
     </AuthContext.Provider>
