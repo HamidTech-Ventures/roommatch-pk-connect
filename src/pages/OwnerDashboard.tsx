@@ -2,21 +2,53 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
+import PropertyStatsCard from '@/components/PropertyStatsCard';
+import TenantManagement from '@/components/TenantManagement';
+import OwnerMessaging from '@/components/OwnerMessaging';
+import PropertyAnalytics from '@/components/PropertyAnalytics';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Home, Users, MessageCircle, Plus, Settings, 
-  TrendingUp, DollarSign, Calendar, AlertCircle,
-  CheckCircle, Clock, User, MapPin
+  TrendingUp, DollarSign, Calendar, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 
 const OwnerDashboard = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 30,
+      rotateX: -15,
+      scale: 0.95
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      rotateX: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
 
   const [properties] = useState([
     {
@@ -27,7 +59,9 @@ const OwnerDashboard = () => {
       occupiedRooms: 18,
       monthlyRevenue: 180000,
       rating: 4.5,
-      status: 'active'
+      status: 'active',
+      inquiries: 12,
+      lastWeekInquiries: 8
     },
     {
       id: '2',
@@ -37,7 +71,9 @@ const OwnerDashboard = () => {
       occupiedRooms: 12,
       monthlyRevenue: 120000,
       rating: 4.2,
-      status: 'active'
+      status: 'active',
+      inquiries: 8,
+      lastWeekInquiries: 5
     },
     {
       id: '3',
@@ -47,363 +83,217 @@ const OwnerDashboard = () => {
       occupiedRooms: 20,
       monthlyRevenue: 200000,
       rating: 4.7,
-      status: 'pending'
-    }
-  ]);
-
-  const [tenants] = useState([
-    { id: '1', name: 'Hassan Ahmed', room: 'A-101', property: 'Green View Hostel', rentPaid: true, moveIn: '2024-01-15' },
-    { id: '2', name: 'Ali Khan', room: 'B-205', property: 'Green View Hostel', rentPaid: false, moveIn: '2024-02-01' },
-    { id: '3', name: 'Sara Malik', room: 'C-301', property: 'Student Paradise', rentPaid: true, moveIn: '2024-01-20' }
-  ]);
-
-  const [messages] = useState([
-    {
-      id: '1',
-      tenant: 'Hassan Ahmed',
-      property: 'Green View Hostel',
-      room: 'A-101',
-      message: 'Water leakage in washroom, need urgent repair',
-      timestamp: '2 hours ago',
       status: 'pending',
-      priority: 'high'
-    },
-    {
-      id: '2',
-      tenant: 'Ali Khan',
-      property: 'Green View Hostel',
-      room: 'B-205',
-      message: 'AC not working properly, please check',
-      timestamp: '5 hours ago',
-      status: 'in-progress',
-      priority: 'medium'
-    },
-    {
-      id: '3',
-      tenant: 'Sara Malik',
-      property: 'Student Paradise',
-      room: 'C-301',
-      message: 'Thank you for the quick WiFi fix!',
-      timestamp: '1 day ago',
-      status: 'resolved',
-      priority: 'low'
+      inquiries: 15,
+      lastWeekInquiries: 10
     }
   ]);
 
   const totalRevenue = properties.reduce((sum, prop) => sum + prop.monthlyRevenue, 0);
   const totalRooms = properties.reduce((sum, prop) => sum + prop.totalRooms, 0);
   const occupiedRooms = properties.reduce((sum, prop) => sum + prop.occupiedRooms, 0);
+  const totalInquiries = properties.reduce((sum, prop) => sum + prop.inquiries, 0);
   const occupancyRate = ((occupiedRooms / totalRooms) * 100).toFixed(1);
 
-  const handleMessageAction = (messageId: string, action: 'resolve' | 'progress') => {
-    toast({
-      title: action === 'resolve' ? 'Message Resolved' : 'Message In Progress',
-      description: `The maintenance request has been marked as ${action === 'resolve' ? 'resolved' : 'in progress'}.`,
-    });
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-emerald-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <Navigation />
       
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
         className="container mx-auto px-4 py-8"
       >
-        <div className="mb-8">
+        {/* Enhanced Header with 3D Effect */}
+        <motion.div
+          variants={itemVariants}
+          className="mb-8 relative"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-blue-500/20 blur-3xl -z-10" />
           <motion.h1
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-4xl font-bold text-gray-800 mb-4"
+            className="text-5xl font-bold bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-4"
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 300 }}
           >
             Welcome back, {user?.name}!
           </motion.h1>
           <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-gray-600 text-lg"
+            variants={itemVariants}
+            className="text-gray-600 text-xl"
           >
-            Manage your properties and tenants from your dashboard
+            Manage your property empire with advanced analytics and seamless communication
           </motion.p>
-        </div>
-
-        {/* Stats Overview */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-emerald-100 text-sm">Total Properties</p>
-                  <p className="text-3xl font-bold">{properties.length}</p>
-                </div>
-                <Home className="h-8 w-8 text-emerald-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-100 text-sm">Monthly Revenue</p>
-                  <p className="text-3xl font-bold">₹{totalRevenue.toLocaleString()}</p>
-                </div>
-                <DollarSign className="h-8 w-8 text-blue-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-purple-100 text-sm">Occupancy Rate</p>
-                  <p className="text-3xl font-bold">{occupancyRate}%</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-purple-200" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-orange-100 text-sm">Active Tenants</p>
-                  <p className="text-3xl font-bold">{tenants.length}</p>
-                </div>
-                <Users className="h-8 w-8 text-orange-200" />
-              </div>
-            </CardContent>
-          </Card>
         </motion.div>
 
-        <Tabs defaultValue="properties" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-cols-4">
-            <TabsTrigger value="properties">Properties</TabsTrigger>
-            <TabsTrigger value="tenants">Tenants</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          </TabsList>
+        {/* Enhanced Stats Overview with 3D Cards */}
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
+          <PropertyStatsCard
+            title="Total Properties"
+            value={properties.length}
+            icon={Home}
+            gradient="from-emerald-500 to-emerald-600"
+            delay={0}
+          />
+          <PropertyStatsCard
+            title="Monthly Revenue"
+            value={`₹${totalRevenue.toLocaleString()}`}
+            icon={DollarSign}
+            gradient="from-blue-500 to-blue-600"
+            delay={0.1}
+          />
+          <PropertyStatsCard
+            title="Occupancy Rate"
+            value={`${occupancyRate}%`}
+            icon={TrendingUp}
+            gradient="from-purple-500 to-purple-600"
+            delay={0.2}
+          />
+          <PropertyStatsCard
+            title="Total Inquiries"
+            value={totalInquiries}
+            icon={MessageCircle}
+            gradient="from-orange-500 to-orange-600"
+            delay={0.3}
+          />
+        </motion.div>
 
-          <TabsContent value="properties">
+        {/* Enhanced Tabs with 3D Navigation */}
+        <motion.div variants={itemVariants}>
+          <Tabs defaultValue="properties" className="space-y-6">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="space-y-6"
+              className="bg-white/70 backdrop-blur-md rounded-2xl p-2 shadow-xl border border-white/20"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">My Properties</h2>
-                <Button className="bg-emerald-600 hover:bg-emerald-700">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Property
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {properties.map((property, index) => (
+              <TabsList className="grid w-full grid-cols-4 bg-transparent">
+                <TabsTrigger 
+                  value="properties" 
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white"
+                >
+                  Properties
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="tenants"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white"
+                >
+                  Tenants
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="messages"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                >
+                  Messages
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="analytics"
+                  className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-orange-600 data-[state=active]:text-white"
+                >
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
+            </motion.div>
+
+            <TabsContent value="properties">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="space-y-6"
+              >
+                <div className="flex justify-between items-center">
+                  <h2 className="text-3xl font-bold text-gray-800">Property Portfolio</h2>
                   <motion.div
-                    key={property.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <Card className="shadow-lg border-0 hover:shadow-xl transition-all duration-300">
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">{property.title}</CardTitle>
-                          <Badge variant={property.status === 'active' ? 'default' : 'secondary'}>
-                            {property.status}
-                          </Badge>
-                        </div>
-                        <CardDescription className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {property.location}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Occupancy</span>
-                            <span className="font-medium">{property.occupiedRooms}/{property.totalRooms}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Monthly Revenue</span>
-                            <span className="font-medium">₹{property.monthlyRevenue.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Rating</span>
-                            <span className="font-medium">{property.rating} ⭐</span>
-                          </div>
-                          <Button variant="outline" className="w-full">
-                            <Settings className="w-4 h-4 mr-2" />
-                            Manage Property
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <Button className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Property
+                    </Button>
                   </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="tenants">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <Card className="shadow-lg border-0">
-                <CardHeader>
-                  <CardTitle>Current Tenants</CardTitle>
-                  <CardDescription>Manage your property tenants</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {tenants.map((tenant, index) => (
-                      <motion.div
-                        key={tenant.id}
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.6 + index * 0.1 }}
-                        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div className="bg-emerald-100 rounded-full p-2">
-                            <User className="w-5 h-5 text-emerald-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium">{tenant.name}</h4>
-                            <p className="text-sm text-gray-600">{tenant.property} - Room {tenant.room}</p>
-                            <p className="text-xs text-gray-500">Move-in: {tenant.moveIn}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={tenant.rentPaid ? 'default' : 'destructive'}>
-                            {tenant.rentPaid ? 'Paid' : 'Pending'}
-                          </Badge>
-                          <Button variant="outline" size="sm">
-                            <MessageCircle className="w-4 h-4 mr-1" />
-                            Contact
-                          </Button>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="messages">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <Card className="shadow-lg border-0">
-                <CardHeader>
-                  <CardTitle>Maintenance Requests</CardTitle>
-                  <CardDescription>Handle tenant maintenance and support requests</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {messages.map((message, index) => (
-                      <motion.div
-                        key={message.id}
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.6 + index * 0.1 }}
-                        className="p-4 border border-gray-200 rounded-lg"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h4 className="font-medium text-gray-900">{message.tenant}</h4>
-                            <p className="text-sm text-gray-600">{message.property} - Room {message.room}</p>
-                          </div>
-                          <div className="flex items-center space-x-2">
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {properties.map((property, index) => (
+                    <motion.div
+                      key={property.id}
+                      initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
+                      animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                      transition={{ delay: 0.1 * index, type: "spring", stiffness: 100 }}
+                      whileHover={{ 
+                        scale: 1.05, 
+                        rotateY: 5,
+                        z: 50,
+                        transition: { type: "spring", stiffness: 300 }
+                      }}
+                      className="group"
+                    >
+                      <Card className="shadow-xl border-0 bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-md hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <CardHeader className="relative z-10">
+                          <div className="flex justify-between items-start">
+                            <CardTitle className="text-xl text-gray-800">{property.title}</CardTitle>
                             <Badge 
-                              variant={
-                                message.priority === 'high' ? 'destructive' :
-                                message.priority === 'medium' ? 'default' : 'secondary'
-                              }
+                              variant={property.status === 'active' ? 'default' : 'secondary'}
+                              className={property.status === 'active' ? 'bg-emerald-500' : ''}
                             >
-                              {message.priority}
+                              {property.status}
                             </Badge>
-                            <span className="text-xs text-gray-500">{message.timestamp}</span>
                           </div>
-                        </div>
-                        <p className="text-gray-700 mb-3">{message.message}</p>
-                        <div className="flex items-center space-x-2">
-                          {message.status === 'pending' && (
-                            <>
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleMessageAction(message.id, 'progress')}
-                              >
-                                <Clock className="w-4 h-4 mr-1" />
-                                In Progress
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleMessageAction(message.id, 'resolve')}
-                              >
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Resolve
-                              </Button>
-                            </>
-                          )}
-                          {message.status === 'in-progress' && (
-                            <Badge variant="default">
-                              <Clock className="w-3 h-3 mr-1" />
-                              In Progress
-                            </Badge>
-                          )}
-                          {message.status === 'resolved' && (
-                            <Badge variant="secondary">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Resolved
-                            </Badge>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
+                          <CardDescription className="text-gray-600">
+                            {property.location}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="relative z-10">
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div className="bg-white/50 rounded-lg p-3">
+                                <p className="text-gray-600">Occupancy</p>
+                                <p className="font-bold text-lg">{property.occupiedRooms}/{property.totalRooms}</p>
+                              </div>
+                              <div className="bg-white/50 rounded-lg p-3">
+                                <p className="text-gray-600">Revenue</p>
+                                <p className="font-bold text-lg">₹{(property.monthlyRevenue/1000).toFixed(0)}K</p>
+                              </div>
+                              <div className="bg-white/50 rounded-lg p-3">
+                                <p className="text-gray-600">Rating</p>
+                                <p className="font-bold text-lg">{property.rating} ⭐</p>
+                              </div>
+                              <div className="bg-white/50 rounded-lg p-3">
+                                <p className="text-gray-600">Inquiries</p>
+                                <p className="font-bold text-lg">{property.inquiries}</p>
+                              </div>
+                            </div>
+                            <Button variant="outline" className="w-full group-hover:bg-emerald-50 transition-colors">
+                              <Settings className="w-4 h-4 mr-2" />
+                              Manage Property
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            </TabsContent>
 
-          <TabsContent value="analytics">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <Card className="shadow-lg border-0">
-                <CardHeader>
-                  <CardTitle>Analytics & Reports</CardTitle>
-                  <CardDescription>Property performance and revenue insights</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Advanced analytics dashboard coming soon...</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="tenants">
+              <TenantManagement />
+            </TabsContent>
+
+            <TabsContent value="messages">
+              <OwnerMessaging />
+            </TabsContent>
+
+            <TabsContent value="analytics">
+              <PropertyAnalytics properties={properties} />
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </motion.div>
     </div>
   );
