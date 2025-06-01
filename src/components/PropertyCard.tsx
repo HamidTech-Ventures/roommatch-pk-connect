@@ -1,5 +1,6 @@
 
 import { Heart, MapPin, Users, Star, MessageCircle, Wifi, Car } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -116,8 +117,10 @@ const PropertyCard = ({ property }: PropertyCardProps) => {
         </div>
 
         <div className="flex gap-2">
-          <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700">
-            View Details
+          <Button className="flex-1 bg-emerald-600 hover:bg-emerald-700" asChild>
+            <Link to={`/property/${property.id}`}>
+              View Details
+            </Link>
           </Button>
           <Button variant="outline" size="sm" className="px-3">
             <MessageCircle className="w-4 h-4" />
